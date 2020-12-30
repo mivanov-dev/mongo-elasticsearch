@@ -1,0 +1,68 @@
+<p>Hi</p>
+
+<div style="display: grid; width: max-content;">
+    <p>Add User</p>
+    <input id="email"
+           placeholder="email"
+           type="text"
+           value="demo@demo.com">
+    <input id="password"
+           placeholder="password"
+           type="text"
+           value="1234567890">
+    <input id="locale"
+           placeholder="locale"
+           type="text"
+           value="bg">
+    <button onclick="add()">+</button>
+    <pre id="add-result"></pre>
+</div>
+
+<div>
+    <p>Search</p>
+    <input id="search"
+           type="search"
+           onkeyup="search()">
+</div>
+<pre id="search-result"></pre>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/socket.io-client@3/dist/socket.io.min.js"></script>
+
+<script>
+    /**
+     *  socket.io
+     */
+    var socket = io();
+    function getMsg(chanel, id) {
+        socket.on(chanel, (msg) => {
+            if (typeof msg === "string") {
+                document.getElementById(id).innerHTML = msg;
+            }
+            else {
+                document.getElementById(id).innerHTML = JSON.stringify(msg, null, '\t');
+            }
+        });
+    }
+    function sendMsg(chanel, str) {
+        socket.emit(chanel, str);
+    }
+
+    sendMsg('msg', 'Hello');
+    getMsg('msg', 'search-result');
+
+    function add() {
+        window.event.preventDefault();
+        var email = document.getElementById('email').value;
+        var password = document.getElementById('password').value;
+        var locale = document.getElementById('locale').value;
+        sendMsg('add', { email, password, locale });
+        getMsg('add', 'add-result');
+    }
+
+    function search() {
+        var search = document.getElementById('search').value;
+        sendMsg('search', search);
+        getMsg('search', 'search-result');
+    }
+</script>
