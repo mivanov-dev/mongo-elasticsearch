@@ -1,28 +1,59 @@
 <p>Hi</p>
+<style>
+    #result {
+        max-width: 1000px;
+    }
 
-<div style="display: grid; width: max-content;">
-    <p>Add User</p>
-    <input id="email"
-           placeholder="email"
-           type="text"
-           value="demo@demo.com">
-    <input id="password"
-           placeholder="password"
-           type="text"
-           value="1234567890">
-    <input id="locale"
-           placeholder="locale"
-           type="text"
-           value="bg">
-    <button id="add">add</button>
+    .menu {
+        width: 350px;
+        flex-direction: row;
+        box-sizing: border-box;
+        display: flex;
+        place-content: flex-start space-between;
+        align-items: flex-start;
+    }
+
+    .add-menu,
+    .search-menu {
+        display: grid;
+        width: max-content;
+    }
+
+    .item {
+        padding: 0 5px;
+        border: 1px solid grey;
+        width: max-content;
+        margin: 5px;
+        display: inline-grid;
+        border-radius: 5px;
+    }
+</style>
+<div class="menu">
+
+    <div class="add-menu">
+        <p>Add User</p>
+        <input id="email"
+               placeholder="email"
+               type="text"
+               value="demo@demo.com">
+        <input id="password"
+               placeholder="password"
+               type="text"
+               value="1234567890">
+        <input id="locale"
+               placeholder="locale"
+               type="text"
+               value="bg">
+        <button id="add">add</button>
+    </div>
+
+    <div class="search-menu">
+        <p>Search</p>
+        <input id="search"
+               type="search">
+    </div>
+
 </div>
-
-<div>
-    <p>Search</p>
-    <input id="search"
-           type="search">
-</div>
-
 <div id="result"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
@@ -66,9 +97,14 @@
             }
             else if (Array.isArray(msg)) {
                 msg.forEach(i => {
-                    const p = document.createElement("p");
-                    p.innerHTML = JSON.stringify(i, null, '\t');
-                    parent.appendChild(p);
+                    const span = document.createElement("span");
+                    span.classList = ['item'];
+                    let str = '';
+
+                    Object.entries(i).forEach(([key, value]) => str += `${key}: ${value}, `);
+
+                    span.innerHTML = str.slice(0, str.lastIndexOf(","));
+                    parent.appendChild(span);
                 });
             }
             else {

@@ -4,20 +4,38 @@ import { esClient } from "../elastic-search";
 import { log } from '../log';
 import { User } from "../mongoose/models/user";
 
-function socket(server: http.Server) {
 
-    const _socket = new socketIo.Server(server);
+const userEvent = {
+    search: (io: socketIo.Socket): void => {
 
-    _socket.on('connection', (io) => {
+        io.on('search', async (msg: any) => {
 
-        io.on('event', (data: any) => log.info(`io event`));
+            try {
+                const { body } = await esClient.search({
+                    index: 'users',
+                    body: {
+                        query: {
+                            query_string: {
+                                fields: ['locale'],
+                                // default_field
+                                query: msg
+                            }
+                        },
+                        from: 0,
+                        size: 20
+                    }
+                });
+                io.emit('search', body.hits.hits.map((i: any) => i._source));
+            } catch (error) {
+                log.error('io error search');
+                console.error(JSON.stringify(error, null, '\t'))
+            }
 
-        io.on('disconnect', () => log.info('io disconnect'));
-
-        io.on('msg', (msg: any) => {
-            log.info('io msg');
-            io.emit('msg', 'Ok !');
         });
+
+    },
+    add: (io: socketIo.Socket): void => {
+
         io.on('add', async (msg: any) => {
             try {
                 await new User(msg).save();
@@ -28,27 +46,23 @@ function socket(server: http.Server) {
             }
         });
 
-        io.on('search', async (msg: any) => {
-            try {
-                const { body } = await esClient.search({
-                    index: 'users',
-                    body: {
-                        query: {
-                            match: {
-                                email: msg
-                            }
-                        }
-                    }
-                });
-                io.emit('search', body.hits.hits.map((i:any) => i._source));
-            } catch (error) {
-                log.error('io error search');
-                console.error(JSON.stringify(error, null, '\t'))
-            }
-        });
-    });
+    }
+};
 
-    return _socket;
+function socket(server: http.Server) {
+
+    const _socket = new socketIo.Server(server);
+
+    _socket.on('connection', (io: socketIo.Socket) => {
+
+        io.on('event', (data: any) => log.info(`io event`));
+
+        io.on('disconnect', () => log.info('io disconnect'));
+
+        userEvent.add(io);
+        userEvent.search(io);
+
+    });
 
 }
 
