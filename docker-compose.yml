@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.4.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.1
     container_name: elasticsearch
     restart: always
     environment:
@@ -18,14 +18,14 @@ services:
     cap_add:
       - IPC_LOCK
     volumes:
-      - elasticsearch-data-volume:/usr/share/elasticsearch/data
+      - data:/usr/share/elasticsearch/data
     ports:
       - 9200:9200
       - 9300:9300
 
   kibana:
     container_name: kibana
-    image: docker.elastic.co/kibana/kibana:7.4.0
+    image: docker.elastic.co/kibana/kibana:7.10.1
     restart: always
     environment:
       - elasticsearch_hosts=http://elasticsearch:9200
@@ -35,5 +35,5 @@ services:
       - elasticsearch
 
 volumes:
-  elasticsearch-data-volume:
+  data:
     driver: local

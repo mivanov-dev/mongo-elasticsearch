@@ -14,33 +14,67 @@
            placeholder="locale"
            type="text"
            value="bg">
-    <button onclick="add()">+</button>
-    <pre id="add-result"></pre>
+    <button id="add">add</button>
 </div>
 
 <div>
     <p>Search</p>
     <input id="search"
-           type="search"
-           onkeyup="search()">
+           type="search">
 </div>
-<pre id="search-result"></pre>
+
+<div id="result"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/socket.io-client@3/dist/socket.io.min.js"></script>
 
 <script>
+    const search = document.getElementById('search');
+    const add = document.getElementById('add');
+
+    search.addEventListener("keyup", (e) => {
+
+        e.preventDefault();
+        sendMsg('search', search.value);
+
+    });
+    add.addEventListener('click', (e) => {
+
+        e.preventDefault();
+        var email = document.getElementById('email').value;
+        var password = document.getElementById('password').value;
+        var locale = document.getElementById('locale').value;
+        sendMsg('add', { email, password, locale });
+
+    });
+
     /**
      *  socket.io
      */
     var socket = io();
-    function getMsg(chanel, id) {
+
+    function getMsg(chanel) {
+
+        const parent = document.getElementById('result');
+
         socket.on(chanel, (msg) => {
+
+            parent.innerHTML = '';
+
             if (typeof msg === "string") {
-                document.getElementById(id).innerHTML = msg;
+                parent.innerHTML = msg;
+            }
+            else if (Array.isArray(msg)) {
+                msg.forEach(i => {
+                    const p = document.createElement("p");
+                    p.innerHTML = JSON.stringify(i, null, '\t');
+                    parent.appendChild(p);
+                });
             }
             else {
-                document.getElementById(id).innerHTML = JSON.stringify(msg, null, '\t');
+                const pre = document.createElement("pre");
+                pre.innerHTML = JSON.stringify(msg, null, '\t');
+                parent.appendChild(pre);
             }
         });
     }
@@ -48,21 +82,6 @@
         socket.emit(chanel, str);
     }
 
-    sendMsg('msg', 'Hello');
-    getMsg('msg', 'search-result');
-
-    function add() {
-        window.event.preventDefault();
-        var email = document.getElementById('email').value;
-        var password = document.getElementById('password').value;
-        var locale = document.getElementById('locale').value;
-        sendMsg('add', { email, password, locale });
-        getMsg('add', 'add-result');
-    }
-
-    function search() {
-        var search = document.getElementById('search').value;
-        sendMsg('search', search);
-        getMsg('search', 'search-result');
-    }
+    getMsg('add');
+    getMsg('search');
 </script>
